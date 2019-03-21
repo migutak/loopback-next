@@ -1,0 +1,51 @@
+{
+  "name": "graphql-test",
+  "version": "1.0.0",
+  "description": "GraphQL Test Application",
+  "keywords": [
+    "loopback-application",
+    "loopback"
+  ],
+  "main": "types/index.d.ts",
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rimraf dist *.tsbuildinfo .eslintcache",
+    "pretest": "npm run clean && npm run build",
+    "migrate": "node ./dist/migrate",
+    "start": "npm run build && node -r source-map-support/register .",
+    "prepare": "npm run build"
+  },
+  "repository": {
+    "type": "git"
+  },
+  "author": "",
+  "license": "MIT",
+  "files": [
+    "README.md",
+    "dist",
+    "src",
+    "!*/__tests__"
+  ],
+  "dependencies": {
+    "@loopback/boot": "^2.3.1",
+    "@loopback/context": "^3.8.1",
+    "@loopback/core": "^2.7.0",
+    "@loopback/openapi-v3": "^3.4.1",
+    "@loopback/repository": "^2.5.1",
+    "@loopback/rest": "^5.0.1",
+    "@loopback/rest-explorer": "^2.2.2",
+    "tslib": "^1.10.0"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2",
+    "source-map-support": "^0.5.19",
+    "@loopback/testlab": "^3.1.5",
+    "@types/node": "^10.17.24",
+    "typescript": "~3.9.3"
+  },
+  "copyright.owner": "IBM Corp."
+}

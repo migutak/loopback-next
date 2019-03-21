@@ -308,6 +308,13 @@
 /extensions/apiconnect @raymondfeng @deepakrkris
 
 #
+# GraphQL
+#
+# - Issue label: GraphQL
+# - Primary owner(s): @raymondfeng
+/extensions/graphql @raymondfeng
+
+#
 # Build & internal tooling
 #
 # - Issue label: Internal Tooling

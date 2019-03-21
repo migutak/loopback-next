@@ -1,0 +1,63 @@
+{
+  "name": "@loopback/graphql",
+  "version": "0.1.0",
+  "description": "LoopBack's graphql integration",
+  "engines": {
+    "node": ">=10"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "acceptance": "lb-mocha \"dist/__tests__/acceptance/**/*.js\"",
+    "build": "lb-tsc",
+    "clean": "lb-clean loopback-graphql*.tgz dist *.tsbuildinfo package",
+    "pretest": "npm run build",
+    "integration": "lb-mocha \"dist/__tests__/integration/**/*.js\"",
+    "test": "lb-mocha \"dist/__tests__/**/*.js\"",
+    "unit": "lb-mocha \"dist/__tests__/unit/**/*.js\"",
+    "verify": "npm pack && tar xf loopback-graphql*.tgz && tree package && npm run clean"
+  },
+  "author": "IBM Corp.",
+  "copyright.owner": "IBM Corp.",
+  "license": "MIT",
+  "dependencies": {
+    "@loopback/boot": "^2.3.1",
+    "@loopback/context": "^3.8.1",
+    "@loopback/core": "^2.7.0",
+    "@loopback/http-server": "^2.1.5",
+    "@loopback/metadata": "^2.1.5",
+    "@types/graphql": "^14.5.0",
+    "apollo-server-express": "^2.13.1",
+    "debug": "^4.0.1",
+    "express": "^4.17.1",
+    "graphql": "^14.6.0",
+    "type-graphql": "^0.17.6"
+  },
+  "devDependencies": {
+    "@loopback/build": "^5.4.1",
+    "@loopback/eslint-config": "^7.0.1",
+    "@loopback/rest": "^5.0.1",
+    "@loopback/testlab": "^3.1.5",
+    "@types/debug": "^4.1.5",
+    "@types/node": "^12.12.29",
+    "class-transformer": "^0.2.3"
+  },
+  "keywords": [
+    "LoopBack",
+    "GraphQL"
+  ],
+  "files": [
+    "README.md",
+    "dist",
+    "src",
+    "!*/__tests__"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/strongloop/loopback-next.git",
+    "directory": "extensions/graphql"
+  }
+}
