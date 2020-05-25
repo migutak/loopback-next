@@ -63,8 +63,7 @@ npm install --save @loopback/graphql
 ## Try it out
 
 ```sh
-npm run build
-node dist/__tests__/fixtures/graphql-test/src/index.js
+npm run demo
 ```
 
 You should see the following messages:

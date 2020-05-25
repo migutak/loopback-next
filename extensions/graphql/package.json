@@ -15,6 +15,7 @@
     "integration": "lb-mocha \"dist/__tests__/integration/**/*.js\"",
     "test": "lb-mocha \"dist/__tests__/**/*.js\"",
     "unit": "lb-mocha \"dist/__tests__/unit/**/*.js\"",
+    "demo": "npm run build && node dist/__tests__/fixtures/graphql-test/src/index.js",
     "verify": "npm pack && tar xf loopback-graphql*.tgz && tree package && npm run clean"
   },
   "author": "IBM Corp.",
