@@ -4,6 +4,7 @@
 // License text available at https://opensource.org/licenses/MIT
 
 import {service} from '@loopback/core';
+import {repository} from '@loopback/repository';
 import {ResolverInterface} from 'type-graphql';
 import {
   arg,
@@ -16,34 +17,36 @@ import {
 } from '../../../../..';
 import {RecipeInput} from '../graphql-types/recipe-input';
 import {Recipe} from '../graphql-types/recipe-type';
+import {RecipeRepository} from '../repositories';
 import {RecipeService} from '../services/recipe.service';
 
 @resolver(of => Recipe)
 export class RecipeResolver implements ResolverInterface<Recipe> {
   constructor(
     // constructor injection of service
-    @service()
-    private readonly recipeService: RecipeService,
+    @repository('RecipeRepository')
+    private readonly recipeRepo: RecipeRepository,
+    @service(RecipeService) private readonly recipeService: RecipeService,
   ) {}
 
   @query(returns => Recipe, {nullable: true})
   async recipe(@arg('recipeId') recipeId: string) {
-    return this.recipeService.getOne(recipeId);
+    return this.recipeRepo.getOne(recipeId);
   }
 
   @query(returns => [Recipe])
   async recipes(): Promise<Recipe[]> {
-    return this.recipeService.getAll();
+    return this.recipeRepo.getAll();
   }
 
   @mutation(returns => Recipe)
   async addRecipe(@arg('recipe') recipe: RecipeInput): Promise<Recipe> {
-    return this.recipeService.add(recipe);
+    return this.recipeRepo.add(recipe);
   }
 
   @fieldResolver()
   async numberInCollection(@root() recipe: Recipe): Promise<number> {
-    const index = await this.recipeService.findIndex(recipe);
+    const index = await this.recipeRepo.findIndex(recipe);
     return index + 1;
   }
 
@@ -53,6 +56,6 @@ export class RecipeResolver implements ResolverInterface<Recipe> {
     @arg('minRate', type => Int, {defaultValue: 0.0})
     minRate: number,
   ): number {
-    return recipe.ratings.filter(rating => rating >= minRate).length;
+    return this.recipeService.ratingsCount(recipe, minRate);
   }
 }

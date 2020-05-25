@@ -30,8 +30,8 @@
     "apollo-server-express": "^2.13.1",
     "debug": "^4.0.1",
     "express": "^4.17.1",
-    "graphql": "^14.6.0",
-    "type-graphql": "^0.17.6"
+    "graphql": "^15.0.0",
+    "type-graphql": "^1.0.0-rc.2"
   },
   "devDependencies": {
     "@loopback/build": "^5.4.1",

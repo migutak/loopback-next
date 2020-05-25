@@ -18,7 +18,7 @@ import {lifeCycleObserver, Server} from '@loopback/core';
 import {HttpOptions, HttpServer} from '@loopback/http-server';
 import {ApolloServer, ApolloServerExpressConfig} from 'apollo-server-express';
 import express from 'express';
-import {buildSchema, ResolverInterface} from 'type-graphql';
+import {buildSchema, NonEmptyArray, ResolverInterface} from 'type-graphql';
 import {LoopBackContainer} from './graphql.container';
 import {GraphQLBindings, GraphQLTags} from './keys';
 
@@ -81,7 +81,9 @@ export class GraphQLServer extends Context implements Server {
   }
 
   async start() {
-    const resolverClasses = this.getResolvers();
+    const resolverClasses = (this.getResolvers() as unknown) as NonEmptyArray<
+      Function
+    >;
     // build TypeGraphQL executable schema
     const schema = await buildSchema({
       // See https://github.com/MichalLytek/type-graphql/issues/150#issuecomment-420181526

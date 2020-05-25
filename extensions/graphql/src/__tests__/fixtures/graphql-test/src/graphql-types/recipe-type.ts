@@ -3,14 +3,18 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
+import {Entity, model, property} from '@loopback/repository';
 import {field, Float, ID, Int, objectType} from '../../../../..';
 
 @objectType({description: 'Object representing cooking recipe'})
-export class Recipe {
+@model({settings: {strict: false}})
+export class Recipe extends Entity {
   @field(type => ID)
+  @property({id: true})
   id: string;
 
   @field()
+  @property()
   title: string;
 
   @field(type => String, {
@@ -25,12 +29,14 @@ export class Recipe {
     nullable: true,
     description: 'The recipe description with preparation info',
   })
+  @property()
   description?: string;
 
   @field(type => [Int])
   ratings: number[];
 
   @field()
+  @property()
   creationDate: Date;
 
   @field(type => Int)
