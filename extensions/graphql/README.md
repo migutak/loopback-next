@@ -3,6 +3,8 @@
 This module provides integration with [GraphQL](https://graphql.org/) using
 [type-graphql](https://typegraphql.com/).
 
+![type-graphql](type-graphql.png)
+
 ## Stability: ⚠️Experimental⚠️
 
 > Experimental packages provide early access to advanced or experimental
