@@ -32,19 +32,66 @@ This package can be used in two flavors:
 - As a server for LoopBack applications
 - As a middleware for LoopBack REST applications
 
+## Add a resolver
+
+Please add `recipe-resolver.ts` to `src/graphql-resolvers`.
+
+```ts
+@resolver(of => Recipe)
+export class RecipeResolver implements ResolverInterface<Recipe> {
+  constructor(
+    // constructor injection of service
+    @repository('RecipeRepository')
+    private readonly recipeRepo: RecipeRepository,
+    @service(RecipeService) private readonly recipeService: RecipeService,
+  ) {}
+
+  @query(returns => Recipe, {nullable: true})
+  async recipe(@arg('recipeId') recipeId: string) {
+    return this.recipeRepo.getOne(recipeId);
+  }
+
+  @query(returns => [Recipe])
+  async recipes(): Promise<Recipe[]> {
+    return this.recipeRepo.getAll();
+  }
+
+  @mutation(returns => Recipe)
+  async addRecipe(@arg('recipe') recipe: RecipeInput): Promise<Recipe> {
+    return this.recipeRepo.add(recipe);
+  }
+
+  @fieldResolver()
+  async numberInCollection(@root() recipe: Recipe): Promise<number> {
+    const index = await this.recipeRepo.findIndex(recipe);
+    return index + 1;
+  }
+
+  @fieldResolver()
+  ratingsCount(
+    @root() recipe: Recipe,
+    @arg('minRate', type => Int, {defaultValue: 0.0})
+    minRate: number,
+  ): number {
+    return this.recipeService.ratingsCount(recipe, minRate);
+  }
+}
+```
+
 ## Use LoopBack dependency injections in resolver classes
 
 All of LoopBack decorators for dependency injection , such as `@inject`,
-`@service`, `repository`, and `config`, can be used with resolver classes.
+`@service`, `@repository`, and `@config`, can be used with resolver classes.
 
 ```ts
 import {service} from '@loopback/core';
 @resolver(of => Recipe)
 export class RecipeResolver implements ResolverInterface<Recipe> {
   constructor(
-    // constructor injection of service using LoopBack
-    @service()
-    private readonly recipeService: RecipeService,
+    // constructor injection of service
+    @repository('RecipeRepository')
+    private readonly recipeRepo: RecipeRepository,
+    @service(RecipeService) private readonly recipeService: RecipeService,
   ) {}
 }
 ```
@@ -53,14 +100,6 @@ export class RecipeResolver implements ResolverInterface<Recipe> {
 
 The `GraphQLComponent` contributes a booter that discovers and registers
 resolver classes from `src/graphql-resolvers` during `app.boot()`.
-
-- recipe-resolver.ts
-
-## Installation
-
-```sh
-npm install --save @loopback/graphql
-```
 
 ## Try it out
 
@@ -76,6 +115,8 @@ Try http://[::1]:3000/graphql
 ```
 
 Open http://127.0.0.1:3000/graphql in your browser to play with the GraphiQL.
+
+![graphql-demo](graphql-demo.png)
 
 1. Copy the query to the right panel:
 
@@ -111,6 +152,12 @@ query GetRecipe1 {
     }
   }
 }
+```
+
+## Installation
+
+```sh
+npm install --save @loopback/graphql
 ```
 
 ## Contributions
