@@ -80,7 +80,9 @@ describe('Context bindings - Injecting dependencies of method', () => {
     const instance = await ctx.get(INFO_CONTROLLER);
     expect(() => {
       invokeMethod(instance, 'greet', ctx);
-    }).to.throw(/The arguments\[0\] is not decorated for dependency injection/);
+    }).to.throw(
+      /The value is not supplied or injected for argument 'InfoController\.prototype\.greet\[0\]/,
+    );
   });
 
   function createContext() {

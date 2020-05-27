@@ -58,7 +58,9 @@ describe('constructor injection', () => {
     expect(() => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       instantiateClass(TestClass, ctx);
-    }).to.throw(/Cannot resolve injected arguments/);
+    }).to.throw(
+      /The value is not supplied or injected for argument 'TestClass\.constructor\[0\]'/,
+    );
   });
 
   it('allows optional constructor injection', () => {
@@ -386,7 +388,9 @@ describe('property injection', () => {
     expect(() => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       instantiateClass(TestClass, ctx);
-    }).to.throw(/Cannot resolve injected property/);
+    }).to.throw(
+      /The binding selector or resolve function is missing for injection of property 'TestClass\.fooBar'/,
+    );
   });
 
   it('resolves injected properties with custom resolve function', () => {
