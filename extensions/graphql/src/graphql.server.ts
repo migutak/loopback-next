@@ -13,8 +13,9 @@ import {
   createBindingFromClass,
   filterByTag,
   inject,
-} from '@loopback/context';
-import {lifeCycleObserver, Server} from '@loopback/core';
+  lifeCycleObserver,
+  Server,
+} from '@loopback/core';
 import {HttpOptions, HttpServer} from '@loopback/http-server';
 import {ApolloServer, ApolloServerExpressConfig} from 'apollo-server-express';
 import express from 'express';

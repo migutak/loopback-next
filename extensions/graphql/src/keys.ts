@@ -3,7 +3,7 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {BindingKey, Constructor} from '@loopback/context';
+import {BindingKey, Constructor} from '@loopback/core';
 import {ResolverData} from 'type-graphql';
 import {GraphQLComponent} from './graphql.component';
 import {GraphQLServer} from './graphql.server';

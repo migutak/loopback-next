@@ -9,8 +9,8 @@ import {
   Context,
   createBindingFromClass,
   filterByKey,
-} from '@loopback/context';
-import {filterByServiceInterface} from '@loopback/core';
+  filterByServiceInterface,
+} from '@loopback/core';
 import debugFactory from 'debug';
 import {ContainerType, ResolverData} from 'type-graphql';
 import {GraphQLBindings, GraphQLTags} from './keys';

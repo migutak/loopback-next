@@ -8,8 +8,8 @@ import {
   Context,
   createBindingFromClass,
   inject,
-} from '@loopback/context';
-import {service} from '@loopback/core';
+  service,
+} from '@loopback/core';
 import {expect} from '@loopback/testlab';
 import {GraphQLResolveInfo} from 'graphql';
 import {

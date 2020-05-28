@@ -9,8 +9,13 @@ import {
   BootBindings,
   booter,
 } from '@loopback/boot';
-import {config, Constructor, inject} from '@loopback/context';
-import {Application, CoreBindings} from '@loopback/core';
+import {
+  Application,
+  config,
+  Constructor,
+  CoreBindings,
+  inject,
+} from '@loopback/core';
 import debugFactory from 'debug';
 import {ResolverClassMetadata} from 'type-graphql/dist/metadata/definitions';
 import {getMetadataStorage} from 'type-graphql/dist/metadata/getMetadataStorage';
