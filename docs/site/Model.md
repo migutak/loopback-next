@@ -112,6 +112,32 @@ export class Customer {
 }
 ```
 
+## Defining a Model at runtime
+
+Models can be created at runtime using the `defineModelClass()` helper function
+from the `@loopback/repository` class. It expects a base model to extend
+(typically `Model` or `Entity`), folowed by the model definition object as shown
+in the example below.
+
+```ts
+const BookModel = defineModelClass<typeof Entity, {id: number; title?: string}>(
+  Entity,
+  bookDef,
+);
+```
+
+In case you need to use an existing Model as the base class, specify the Model
+as the base class instead of `Entity`.
+
+```ts
+import DynamicModelCtor from '@loopback/repository';
+// Assuming User is a pre-existing Model class in the app
+const StudentModel = defineModelClass<
+  typeof User,
+  {id: number; university?: string}
+>(User, studentDef);
+```
+
 ## Model Discovery
 
 LoopBack can automatically create model definitions by discovering the schema of

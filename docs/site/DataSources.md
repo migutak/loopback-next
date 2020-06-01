@@ -52,3 +52,25 @@ export class DbDataSource extends juggler.DataSource {
   }
 }
 ```
+
+### Creating a DataSource at Runtime
+
+A datasource can be created at runtime by creating an instance of
+`juggler.DataSource`. It requires a name for the datasource, the connector, and
+a connection url as shown below.
+
+```ts
+import {juggler} from '@loopback/repository';
+const dsName = 'bookstore-ds';
+const bookDs = new juggler.DataSource({
+  name: dsName,
+  connector: require('loopback-connector-mongodb'),
+  url: 'mongodb://sysop:moon@localhost',
+});
+await bookDs.connect();
+app.dataSource(bookDs, dsName);
+```
+
+To use the newly created datasource, call its `.connect()` method and attach it
+to the app using `app.dataSource()` method. Note, this method will be available
+only on `RepositoryMixin` apps.
