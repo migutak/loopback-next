@@ -8,28 +8,22 @@ permalink: /doc/en/lb4/Loopback-component-authentication.html
 
 ## Overview
 
-Security is of paramount importance when developing a web or mobile application
-and usually consists of two distinct pieces:
-
-- Authentication
-- Authorization
-
-[Authentication](https://en.wikipedia.org/wiki/Authentication) is a process of
-verifying someone's identity before a protected resource is accessed.
-
-[Authorization](https://en.wikipedia.org/wiki/Authorization) is a process of
-deciding if a user can perform an action on a protected resource.
-
-{% include note.html content="
-For a description of an `Authorization` process, please see [Authorization](Loopback-component-authorization.md).
-" %}
-
 This document describes the details of the LoopBack 4 `Authentication` component
 from the `@loopback/authentication` package.
+
+It begins with the architecture of `@loopback/authentication` from high level.
+Then comes with the sub-sections for each artifact provided by the component.
+Each section shows:
+
+- **How to use it in the application.** (Code that users need to add when use
+  the module.)
+- **The mechanism of that artifact.** (Code that explains the mechanism.)
 
 Here is a **high level** overview of the authentication component.
 
 ![authentication_overview_highlevel](./imgs/authentication_overview_highlevel.png)
+
+As illustrated in the diagram, this component includes:
 
 - A decorator to express an authentication requirement on controller methods
 - A provider to access method-level authentication metadata
@@ -37,7 +31,8 @@ Here is a **high level** overview of the authentication component.
 - An extension point to discover all authentication strategies and handle the
   delegation
 
-Here is a **detailed** overview of the authentication component.
+Then let's take a look of the **detailed** overview of the authentication
+component.
 
 ![authentication_overview_detailed](./imgs/authentication_overview_detailed.png)
 
@@ -58,7 +53,7 @@ The **Authentication Component** takes care of the rest.
 npm install --save @loopback/authentication
 ```
 
-## Authentication Component
+## Mounting Authentication Component
 
 To utilize `authentication` in an application `application.ts`, you must load
 the authentication component named `AuthenticationComponent`.
@@ -73,9 +68,10 @@ export class MyApplication extends BootMixin(
     super(options);
 
     //...
-
+    // ------ ADD SNIPPET AT THE BOTTOM ---------
+    // Mount authentication system
     this.component(AuthenticationComponent);
-
+    // ------------- END OF SNIPPET -------------
     //...
   }
 }
@@ -84,6 +80,7 @@ export class MyApplication extends BootMixin(
 The `AuthenticationComponent` is defined as follows:
 
 ```ts
+// ------ CODE THAT EXPLAINS THE MECHANISM ---------
 export class AuthenticationComponent implements Component {
   providers?: ProviderMap;
 
@@ -102,20 +99,24 @@ which make up the bulk of the authentication component.
 
 Essentially
 
+- The binding key `AuthenticationBindings.METADATA.key` is bound to
+  `AuthMetadataProvider` which returns authentication decorator metadata of type
+  `AuthenticationMetadata`
 - The binding key `AuthenticationBindings.AUTH_ACTION.key` is bound to
   `AuthenticateActionProvider` which returns an authenticating function of type
   `AuthenticateFn`
 - The binding key `AuthenticationBindings.STRATEGY.key` is bound to
   `AuthenticationStrategyProvider` which resolves and returns an authentication
   strategy of type `AuthenticationStrategy`
-- The binding key `AuthenticationBindings.METADATA.key` is bound to
-  `AuthMetadataProvider` which returns authentication decorator metadata of type
-  `AuthenticationMetadata`
 
 The purpose of these providers and the values they return will be explained in
 the sections below.
 
-## Using the Authentication Decorator
+## Concept One - Authentication Decorator
+
+The decorators in LoopBack 4 are no different to the standard decorators in
+TypeScript. They add metadata to classes, methods. properties, or parameters.
+They don't actually add any functionality, only metadata.
 
 Securing your application's API endpoints is done by decorating **controller**
 functions with the
@@ -155,10 +156,13 @@ export class WhoAmIController {
   constructor(
     // `AuthenticationBindings.CURRENT_USER` is now an alias of
     // `SecurityBindings.USER` in @loopback/security
+    // ------ ADD SNIPPET ---------
     @inject(SecurityBindings.USER)
     private userProfile: UserProfile,
-  ) {}
+  ) // ------------- END OF SNIPPET -------------
+  {}
 
+  // ------ ADD SNIPPET ---------
   @authenticate('basic')
   @get('/whoami')
   whoAmI(): string {
@@ -167,6 +171,7 @@ export class WhoAmIController {
     // https://loopback.io/doc/en/lb4/Security
     return this.userProfile[securityId];
   }
+  // ------------- END OF SNIPPET -------------
 }
 ```
 
@@ -194,25 +199,22 @@ data of type `AuthenticationMetadata` provided by `AuthMetadataProvider`. The
 `AuthenticationMetadata` to figure out what **name** you specified as a
 parameter in the `@authenticate` decorator of a specific controller endpoint.
 
-## Default authentication metadata
+## Concept Two - Authentication Action
 
-In some cases, it's desirable to have a default authentication enforcement for
-methods that are not explicitly decorated with `@authenticate`. To do so, we can
-simply configure the authentication component with `defaultMetadata` as follows:
-
-```ts
-app
-  .configure(AuthenticationBindings.COMPONENT)
-  .to({defaultMetadata: {strategy: 'xyz'}});
-```
-
-## Adding an Authentication Action to a Custom Sequence
+### Adding an Authentication Action to a Custom Sequence
 
 In a LoopBack 4 application with REST API endpoints, each request passes through
 a stateless grouping of actions called a [Sequence](Sequence.md).
 
-Here is an example of the default sequence that is created in a LoopBack 4
-application.
+The default sequence which injects and invokes actions `findRoute`,
+`parseParams`, `invoke`, `send`, `reject` could be found in the
+[Todo example's sequence file](https://github.com/strongloop/loopback-next/blob/master/examples/todo/src/sequence.ts)
+
+To know more details of what each action does, click the code snippet below with
+more descriptions.
+
+<details>
+<summary>Click to view the details of the default sequence</summary>
 
 ```ts
 export class DefaultSequence implements SequenceHandler {
@@ -271,6 +273,8 @@ export class DefaultSequence implements SequenceHandler {
 }
 ```
 
+</details>
+
 By default, authentication is **not** part of the sequence of actions, so you
 must create a custom sequence and add the authentication action.
 
@@ -280,6 +284,7 @@ An authentication action `AuthenticateFn` is provided by the
 `AuthenticateActionProvider` is defined as follows:
 
 ```ts
+// ------ CODE THAT EXPLAINS THE MECHANISM ---------
 export class AuthenticateActionProvider implements Provider<AuthenticateFn> {
   constructor(
     // The provider is instantiated for Sequence constructor,
@@ -348,56 +353,36 @@ action.
 ```ts
 export class MyAuthenticatingSequence implements SequenceHandler {
   constructor(
-    @inject(SequenceActions.FIND_ROUTE) protected findRoute: FindRoute,
-    @inject(SequenceActions.PARSE_PARAMS)
-    protected parseParams: ParseParams,
-    @inject(SequenceActions.INVOKE_METHOD) protected invoke: InvokeMethod,
-    @inject(SequenceActions.SEND) protected send: Send,
-    @inject(SequenceActions.REJECT) protected reject: Reject,
+    // ... Other injections
+    // ------ ADD SNIPPET ---------
     @inject(AuthenticationBindings.AUTH_ACTION)
     protected authenticateRequest: AuthenticateFn,
-  ) {}
+  ) // ------------- END OF SNIPPET -------------
+  {}
 
   async handle(context: RequestContext) {
     try {
       const {request, response} = context;
       const route = this.findRoute(request);
 
+      // ------ ADD SNIPPET ---------
       //call authentication action
       await this.authenticateRequest(request);
+      // ------------- END OF SNIPPET -------------
 
       // Authentication successful, proceed to invoke controller
       const args = await this.parseParams(request, route);
       const result = await this.invoke(route, args);
       this.send(response, result);
     } catch (error) {
-      //
-      // The authentication action utilizes a strategy resolver to find
-      // an authentication strategy by name, and then it calls
-      // strategy.authenticate(request).
-      //
-      // The strategy resolver throws a non-http error if it cannot
-      // resolve the strategy. When the strategy resolver obtains
-      // a strategy, it calls strategy.authenticate(request) which
-      // is expected to return a user profile. If the user profile
-      // is undefined, then it throws a non-http error.
-      //
-      // It is necessary to catch these errors and add HTTP-specific status
-      // code property.
-      //
-      // Errors thrown by the strategy implementations already come
-      // with statusCode set.
-      //
-      // In the future, we want to improve `@loopback/rest` to provide
-      // an extension point allowing `@loopback/authentication` to contribute
-      // mappings from error codes to HTTP status codes, so that application
-      // don't have to map codes themselves.
+      // ------ ADD SNIPPET ---------
       if (
         error.code === AUTHENTICATION_STRATEGY_NOT_FOUND ||
         error.code === USER_PROFILE_NOT_FOUND
       ) {
         Object.assign(error, {statusCode: 401 /* Unauthorized */});
       }
+      // ------------- END OF SNIPPET -------------
 
       this.reject(context, error);
       return;
@@ -431,7 +416,7 @@ custom authentications strategy or its custom services.
 If any error is thrown during the authentication process, the controller
 function of the endpoint is never executed.
 
-## Binding the Authenticating Sequence to the Application
+### Binding the Authenticating Sequence to the Application
 
 Now that we've defined a custom sequence that performs an authentication action
 on every request, we must bind it to the application `application.ts`
@@ -445,172 +430,58 @@ export class MyApplication extends BootMixin(
 
     //...
 
+    // ------ ADD SNIPPET ---------
     this.sequence(MyAuthenticatingSequence);
+    // ------------- END OF SNIPPET -------------
 
     //...
   }
 }
 ```
 
-## Creating a Custom Authentication Strategy
+## Concept Three - Authentication Strategy
 
-Support for multiple authentication strategies is possible with a **common**
-authentication strategy interface, and an **extensionPoint/extensions** pattern
-used to **register** and **discover** authentication strategies.
+`AuthenticationStrategy` is a standard interface that the
+`@loopback/authentication` package understands. Hence, any authentication
+strategy that adopts this interface can be used with `@loopback/authentication`.
+Think of it like the standard interface for
+[Passport.js](http://www.passportjs.org/packages/passport-npm/) uses to
+interface with many different authentication strategies.
 
-The `AuthenticationComponent` declares a common authentication strategy
-interface named `AuthenticationStrategy`.
+With a **common** authentication strategy interface and an
+[**extensionPoint/extensions**](Extension-point-and-extensions.md) pattern used
+to **register** and **discover** authentication strategies, users can bind
+**multiple strategies** to an application.
 
-```ts
-export interface AuthenticationStrategy {
-  /**
-   * The 'name' property is a unique identifier for the
-   * authentication strategy (for example: 'basic', 'jwt', etc)
-   */
-  name: string;
+The component has a default authentication strategy provider which discovers the
+registered strategies by name. It automatically searches with the name given in
+an endpoint's `@authenticate()` decorator, then return the corresponding
+strategy for the authentication action to proceed.
 
-  /**
-   * The 'authenticate' method takes in a given request and returns a user profile
-   * which is an instance of 'UserProfile'.
-   * (A user profile is a minimal subset of a user object)
-   * If the user credentials are valid, this method should return a 'UserProfile' instance.
-   * If the user credentials are invalid, this method should throw an error
-   * If the user credentials are missing, this method should throw an error, or return 'undefined'
-   * and let the authentication action deal with it.
-   *
-   * @param request - Express request object
-   */
-  authenticate(request: Request): Promise<UserProfile | undefined>;
-}
-```
-
-Developers that wish to create a custom authentication strategy must implement
-this interface. The custom authentication strategy must have a **unique** `name`
-and have an `authenticate` function which takes in a request and returns the
-user profile of an authenticated user.
-
-Here is an example of a basic authentication strategy
-`BasicAuthenticationStrategy` with the **name** `'basic'` in
-`basic-strategy.ts`:
-
-```ts
-export interface Credentials {
-  username: string;
-  password: string;
-}
-
-export class BasicAuthenticationStrategy implements AuthenticationStrategy {
-  name: string = 'basic';
-
-  constructor(
-    @inject(UserServiceBindings.USER_SERVICE)
-    private userService: UserService,
-  ) {}
-
-  async authenticate(request: Request): Promise<UserProfile | undefined> {
-    const credentials: Credentials = this.extractCredentials(request);
-    const user = await this.userService.verifyCredentials(credentials);
-    const userProfile = this.userService.convertToUserProfile(user);
-
-    return userProfile;
-  }
-
-  extractCredentials(request: Request): Credentials {
-    let creds: Credentials;
-
-    /**
-     * Code to extract the 'basic' user credentials from the Authorization header
-     */
-
-    return creds;
-  }
-}
-```
-
-As you can see in the example, an authentication strategy can inject custom
-services to help it accomplish certain tasks. See the complete examples for
+It's usually **extension developer**'s responsibility to provide an
+authentication strategy as provider. To simplify the tutorial, we leverage an
+existing strategy from file
 [basic authentication strategy](https://github.com/strongloop/loopback-next/blob/master/packages/authentication/src/__tests__/fixtures/strategies/basic-strategy.ts)
-and
-[jwt authentication strategy](https://github.com/strongloop/loopback-next/blob/master/packages/authentication/src/__tests__/fixtures/strategies/jwt-strategy.ts).
+to show people how to register (bind) an strategy to the application.
 
-The `AuthenticationComponent` component also provides two **optional** service
-interfaces which may be of use to your application:
-[UserService](https://github.com/strongloop/loopback-next/blob/master/packages/authentication/src/services/user.service.ts)
-and
-[TokenService](https://github.com/strongloop/loopback-next/blob/master/packages/authentication/src/services/token.service.ts).
+Before registering the `basic` strategy, please make sure the following files
+are copied to your application:
 
-## Registering a Custom Authentication Strategy
+- Copy
+  [basic authentication strategy](https://github.com/strongloop/loopback-next/blob/master/packages/authentication/src/__tests__/fixtures/strategies/basic-strategy.ts)
+  to `src/strategies/basic-strategy.ts`
+- Copy
+  [user service](https://github.com/strongloop/loopback-next/blob/master/packages/authentication/src/__tests__/fixtures/services/basic-auth-user-service.ts)
+  to `src/services/basic-auth-user-service.ts`
+  - Copy
+    [user model](https://github.com/strongloop/loopback-next/blob/master/packages/authentication/src/__tests__/fixtures/users/user.ts)
+    to `src/models/user.ts`
+  - Copy
+    [user repository](https://github.com/strongloop/loopback-next/blob/master/packages/authentication/src/__tests__/fixtures/users/user.repository.ts)
+    to `src/repositories/user.repository.ts`
 
-The **registration** and **discovery** of authentication strategies is possible
-via the [Extension Point and Extensions](Extension-point-and-extensions.md)
-pattern.
-
-You don't have to worry about the **discovery** of authentication strategies,
-this is taken care of by `AuthenticationStrategyProvider` which resolves and
-returns an authentication strategy of type `AuthenticationStrategy`.
-
-The `AuthenticationStrategyProvider` class **(shown below)** declares an
-`extension point` named
-`AuthenticationBindings.AUTHENTICATION_STRATEGY_EXTENSION_POINT_NAME` via the
-`@extensionPoint` decorator. The binding scope is set to **transient** because
-an authentication strategy **may** differ with each request.
-
-With the aid of **metadata** of type `AuthenticationMetadata` (provided by
-`AuthMetadataProvider` and injected via the `AuthenticationBindings.METADATA`
-binding key), the **name** of the authentication strategy, specified in the
-`@authenticate` decorator for this request, is obtained.
-
-Then, with the aid of the `@extensions()` **getter** decorator,
-`AuthenticationStrategyProvider` is responsible for **finding** and
-**returning** the authentication strategy which has that specific **name** and
-has been `registered` as an **extension** of the aforementioned **extension
-point**.
-
-```ts
-@extensionPoint(
-  AuthenticationBindings.AUTHENTICATION_STRATEGY_EXTENSION_POINT_NAME,
-  {scope: BindingScope.TRANSIENT},
-) //this needs to be transient, e.g. for request level context.
-export class AuthenticationStrategyProvider
-  implements Provider<AuthenticationStrategy | undefined> {
-  constructor(
-    @extensions()
-    private authenticationStrategies: Getter<AuthenticationStrategy[]>,
-    @inject(AuthenticationBindings.METADATA)
-    private metadata?: AuthenticationMetadata,
-  ) {}
-  async value(): Promise<AuthenticationStrategy | undefined> {
-    if (!this.metadata) {
-      return undefined;
-    }
-    const name = this.metadata.strategy;
-    const strategy = await this.findAuthenticationStrategy(name);
-    if (!strategy) {
-      // important to throw a non-protocol-specific error here
-      let error = new Error(`The strategy '${name}' is not available.`);
-      Object.assign(error, {
-        code: AUTHENTICATION_STRATEGY_NOT_FOUND,
-      });
-      throw error;
-    }
-    return strategy;
-  }
-
-  async findAuthenticationStrategy(name: string) {
-    const strategies = await this.authenticationStrategies();
-    const matchingAuthStrategy = strategies.find(a => a.name === name);
-    return matchingAuthStrategy;
-  }
-}
-```
-
-In order for your custom authentication strategy to be **found**, it needs to be
-**registered**.
-
-**Registering** a custom authentication strategy `BasicAuthenticationStrategy`
-as an extension of the
-`AuthenticationBindings.AUTHENTICATION_STRATEGY_EXTENSION_POINT_NAME` extension
-point in an application `application.ts` is as simple as:
+**Registering** `BasicAuthenticationStrategy` in an application `application.ts`
+is as simple as:
 
 ```ts
 import {registerAuthenticationStrategy} from '@loopback/authentication';
@@ -622,32 +493,15 @@ export class MyApplication extends BootMixin(
     super(options);
 
     //...
-
+    // ------ ADD SNIPPET ---------
     registerAuthenticationStrategy(this, BasicAuthenticationStrategy);
-
+    // ----- END OF SNIPPET -------
     //...
   }
 }
 ```
 
-### Using Passport-based Strategies
-
-The earlier version of `@loopback/authentication` is based on an express
-middleware called `passport`, which supports 500+ passport strategies for
-verifying an express app's requests. In `@loopback/authentication@2.0`, we
-defined our own interface `AuthenticationStrategy` that describes a strategy
-with different contracts than the passport strategy, but we still want to keep
-the ability to support those existing 500+ community passport strategies.
-Therefore, we rewrote the adapter class. It now converts a passport strategy to
-the one that LoopBack 4 authentication system expects and it was released in a
-new package `@loopback/authentication-passport`.
-
-Creating and registering a passport strategy is explained in
-[the README.md file](https://www.npmjs.com/package/@loopback/authentication-passport)
-
-The usage of authentication decorator and the change in sequence stay the same.
-
-## Managing Custom Authentication Strategy Options
+## Advanced Topic - Managing Custom Authentication Strategy Options
 
 This is an **optional** step.
 
@@ -662,6 +516,18 @@ define its **default** options in one place, and only specify **overriding**
 options in the **@authenticate** decorator when necessary.
 
 Here are the steps for accomplishing this.
+
+### Default authentication metadata
+
+In some cases, it's desirable to have a default authentication enforcement for
+methods that are not explicitly decorated with `@authenticate`. To do so, we can
+simply configure the authentication component with `defaultMetadata` as follows:
+
+```ts
+app
+  .configure(AuthenticationBindings.COMPONENT)
+  .to({defaultMetadata: {strategy: 'xyz'}});
+```
 
 ### Define the Options Interface and Binding Key
 
@@ -862,6 +728,7 @@ export class MyApplication extends BootMixin(
 
     //...
 
+    // ------ ADD SNIPPET ---------
     // load the authentication component
     this.component(AuthenticationComponent);
 
@@ -870,6 +737,7 @@ export class MyApplication extends BootMixin(
 
     // use your custom authenticating sequence
     this.sequence(MyAuthenticatingSequence);
+    // ------------- END OF SNIPPET -------------
 
     this.static('/', path.join(__dirname, '../public'));
 
@@ -885,6 +753,6 @@ export class MyApplication extends BootMixin(
   }
 ```
 
-You can find a **completed example** and **tutorial** of a LoopBack 4 shopping
-cart application with JWT authentication
+You can find a **completed example** and **tutorial** of a LoopBack 4
+application with JWT authentication
 [here](./tutorials/authentication/Authentication-Tutorial.md).
