@@ -116,8 +116,9 @@ export class Customer {
 
 Models can be created at runtime using the `defineModelClass()` helper function
 from the `@loopback/repository` class. It expects a base model to extend
-(typically `Model` or `Entity`), folowed by the model definition object as shown
-in the example below.
+(typically `Model` or `Entity`), followed by a `ModelDefinition` object as shown
+in the example below. The `ModelDefinition` object is an abstraction for
+specifying the various attributes of a LoopBack model.
 
 ```ts
 const BookModel = defineModelClass<typeof Entity, {id: number; title?: string}>(
@@ -130,13 +131,20 @@ In case you need to use an existing Model as the base class, specify the Model
 as the base class instead of `Entity`.
 
 ```ts
-import DynamicModelCtor from '@loopback/repository';
 // Assuming User is a pre-existing Model class in the app
+import {User} from './user.model';
+import DynamicModelCtor from '@loopback/repository';
 const StudentModel = defineModelClass<
   typeof User,
-  {id: number; university?: string}
+  // id being provided by the base class User
+  {university?: string},
 >(User, studentDef);
 ```
+
+If you want make this new Model available from other parts of the app, you can
+call `app.model(StudentModel)` to create a binding for it. Note, the
+`app.model()` method is available only on application classes with
+`RepositoryMixin` applied.
 
 ## Model Discovery
 

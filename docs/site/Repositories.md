@@ -368,8 +368,8 @@ inject(`datasources.${dsName.name}`)(BookRepository, undefined, 0);
 const repoBinding = app.repository(BookRepository);
 ```
 
-Note, the `app.repository()` method will be available only on `RepositoryMixin`
-apps
+Note, the `app.repository()` method is available only on application classes
+with `RepositoryMixin` applied.
 
 ## Access KeyValue Stores
 

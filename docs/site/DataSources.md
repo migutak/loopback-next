@@ -57,7 +57,7 @@ export class DbDataSource extends juggler.DataSource {
 
 A datasource can be created at runtime by creating an instance of
 `juggler.DataSource`. It requires a name for the datasource, the connector, and
-a connection url as shown below.
+the connection details.
 
 ```ts
 import {juggler} from '@loopback/repository';
@@ -71,6 +71,10 @@ await bookDs.connect();
 app.dataSource(bookDs, dsName);
 ```
 
-To use the newly created datasource, call its `.connect()` method and attach it
-to the app using `app.dataSource()` method. Note, this method will be available
-only on `RepositoryMixin` apps.
+For details about datasource options, refer to the
+[DataSource documentation])(https://apidocs.strongloop.com/loopback-datasource-juggler/#datasource)
+.
+
+Attach the newly created datasource to the app by calling `app.dataSource()`.
+Note, the `app.repository()` method is available only on application classes
+with `RepositoryMixin` applied.
