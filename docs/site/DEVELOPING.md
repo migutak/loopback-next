@@ -286,6 +286,46 @@ LoopBack 4 documentation is hosted inside this monorepo in the
 This allows us to change both implementation and the documentation in a single
 pull request.
 
+### Organization of content
+
+LoopBack 4 is a large codebase organized into dozens of packages. We,
+developers, are often tempted to include a lot of details and wider context when
+writing docs. While this is good for capturing the knowledge in a text form, it
+also makes the documentation difficult to follow by people new to LoopBack.
+Newcomers get quickly overwhelmed by the amount of concepts they need to
+understand and all the different packages they need to know about.
+
+To prevent that issue, we have categorized all monorepo packages into two
+groups:
+
+1. Building-blocks are lower-level packages that are typically not consumed by
+   LoopBack projects directly, instead there is a higher-level package exposing
+   the functionality and/or the public API of these building blocks.
+
+2. Framework-level packages are used directly by LoopBack projects and provide
+   API that LoopBack consumers use.
+
+In our documentation, CLI template and example applications, you should always
+refer to framework-level packages. Building-block packages should have their own
+documentation, for example in their `README.md` or in a dedicated section of
+[loopback.io](https://loopback.io).
+
+The rule of thumb: if a higher-level package is re-exporting all public APIs
+from a lower-level package (e.g. `@loopback/core` re-exports
+`@loopback/context`) or is using another package as a implementation building
+block (e.g. `@loopback/rest` uses `@loopback/express`), then the lower-level
+package should be moved to "building blocks" and our documentation should be
+updated to reference the higher-level "framework" instead.
+
+List of packages that are considered as building blocks:
+
+- [packages/context](https://github.com/strongloop/loopback-next/tree/master/packages/context]
+- [packages/express](https://github.com/strongloop/loopback-next/tree/master/packages/express]
+- [packages/http-server](https://github.com/strongloop/loopback-next/tree/master/packages/http-server]
+- [packages/metadata](https://github.com/strongloop/loopback-next/tree/master/packages/metadata]
+- [packages/openapi-v3](https://github.com/strongloop/loopback-next/tree/master/packages/openapi-v3]
+- [packages/repository-json-schema](https://github.com/strongloop/loopback-next/tree/master/packages/repository-json-schema]
+
 ### Publishing changes
 
 To prevent documentation changes going live before the changes in the
